@@ -30,7 +30,7 @@ public class UserController {
         }
 
         String loginId = userDetails.getUsername();
-        User user = userRepository.findByLoginId(loginId)
+        User user = userRepository.findByLoginIdAndDeletedFalse(loginId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         UserDto userDto = UserDto.builder()
@@ -45,5 +45,23 @@ public class UserController {
                 .build();
 
         return ResponseEntity.ok(new BaseResponse<>(200, "사용자 정보 조회 성공", userDto));
+    }
+
+    @GetMapping("/check-nickname")
+    public ResponseEntity<BaseResponse<Boolean>> checkNickname(@RequestParam String nickname) {
+        boolean exists = userRepository.existsByNickname(nickname);
+        if (exists) {
+            return ResponseEntity.ok(new BaseResponse<>(409, "이미 사용 중인 닉네임입니다.", false));
+        }
+        return ResponseEntity.ok(new BaseResponse<>(200, "사용 가능한 닉네임입니다.", true));
+    }
+
+    @GetMapping("/check-loginId")
+    public ResponseEntity<BaseResponse<Boolean>> checkLoginId(@RequestParam String loginId) {
+        boolean exists = userRepository.existsByLoginId(loginId);
+        if (exists) {
+            return ResponseEntity.ok(new BaseResponse<>(409, "이미 사용 중인 아이디입니다.", false));
+        }
+        return ResponseEntity.ok(new BaseResponse<>(200, "사용 가능한 아이디입니다.", true));
     }
 }
